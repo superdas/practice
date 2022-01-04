@@ -4,14 +4,18 @@ public class Problem695_MaxAreaOfIsland {
 
     public int maxAreaOfIsland(int[][] grid) {
         int maxIslandSize = 0;
-        int nextIslandId = 2;
 
-        if (grid.length == 0 || grid[0].length == 0) {
+        int iMax = grid.length;
+        if (iMax == 0) {
+            return 0;
+        }
+        int jMax = grid[0].length;
+        if (jMax == 0) {
             return 0;
         }
 
         // For every row...
-        for (int i = 0; i < grid.length; i++) {
+        for (int i = 0; i< grid.length; i++) {
             // For every column...
             for (int j = 0; j < grid[0].length; j++) {
                 int value = grid[i][j];
@@ -21,11 +25,8 @@ public class Problem695_MaxAreaOfIsland {
                     continue;
                 }
 
-                // Get island ID.
-                int islandId = nextIslandId++;
-
                 // Travel island.
-                int size = travel(grid, i, j, islandId);
+                int size = travel(grid, i, j, iMax, jMax);
 
                 // Update max island size.
                 if (size > maxIslandSize) {
@@ -37,32 +38,32 @@ public class Problem695_MaxAreaOfIsland {
         return maxIslandSize;
     }
 
-    private int travel(int[][] grid, int i, int j, int islandId) {
-        if (grid[i][j] != 1) {
-            return 0;
-        }
-
+    private int travel(int[][] grid, int i, int j, int iMax, int jMax) {
         int size = 1;
-        grid[i][j] = islandId;
+        grid[i][j] = 2;
 
         // up
-        if (i - 1 >= 0) {
-            size += travel(grid, i - 1, j, islandId);
+        int up = i - 1;
+        if (up >= 0 && grid[up][j] == 1) {
+            size += travel(grid, up, j, iMax, jMax);
         }
 
         // right
-        if (j + 1 < grid[0].length) {
-            size += travel(grid, i, j + 1, islandId);
+        int right = j + 1;
+        if (right < jMax && grid[i][right] == 1) {
+            size += travel(grid, i, right, iMax, jMax);
         }
 
         // down
-        if (i + 1 < grid.length) {
-            size += travel(grid, i + 1, j, islandId);
+        int down = i + 1;
+        if (down < iMax && grid[down][j] == 1) {
+            size += travel(grid, down, j, iMax, jMax);
         }
 
         // left
-        if (j - 1 >= 0) {
-            size += travel(grid, i, j - 1, islandId);
+        int left = j - 1;
+        if (left >= 0 && grid[i][left] == 1) {
+            size += travel(grid, i, left, iMax, jMax);
         }
 
         return size;
