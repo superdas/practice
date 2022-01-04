@@ -1,16 +1,10 @@
 package superdas.practice.leetcode;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 public class Problem695_MaxAreaOfIsland {
 
     public int maxAreaOfIsland(int[][] grid) {
-        IslandSize maxIslandSize = new IslandSize(0);
-        Map<Integer, IslandSize> islandIdToSize = new HashMap<>();
-        NextIslandId nextIslandId = new NextIslandId();
+        int maxIslandSize = 0;
+        int nextIslandId = 2;
 
         if (grid.length == 0 || grid[0].length == 0) {
             return 0;
@@ -22,101 +16,55 @@ public class Problem695_MaxAreaOfIsland {
             for (int j = 0; j < grid[0].length; j++) {
                 int value = grid[i][j];
 
-                // Skip water.
-                if (value == 0) {
+                // Skip water or already visited.
+                if (value != 1) {
                     continue;
                 }
 
-                // Get island size.
-                IslandSize islandSize =
-                        getIslandSize(grid, i, j, islandIdToSize, nextIslandId);
+                // Get island ID.
+                int islandId = nextIslandId++;
 
-                // Set island ID.
-                grid[i][j] = islandSize.id();
-
-                // Update island size.
-                islandSize.increment();
+                // Travel island.
+                int size = travel(grid, i, j, islandId);
 
                 // Update max island size.
-                if (islandSize.size() > maxIslandSize.size()) {
-                    maxIslandSize = islandSize;
+                if (size > maxIslandSize) {
+                    maxIslandSize = size;
                 }
             }
         }
 
-        return maxIslandSize.size();
+        return maxIslandSize;
     }
 
-    private static IslandSize getIslandSize(
-            int[][] grid, int i, int j,
-            Map<Integer, IslandSize> islandIdToSize, NextIslandId nextIslandId) {
-
-        int topIslandId = 0;
-        IslandSize topIslandSize = null;
-        // Check top if not top-most row.
-        if (i > 0) {
-            topIslandId = grid[i - 1][j];
-            topIslandSize = islandIdToSize.get(topIslandId);
+    private int travel(int[][] grid, int i, int j, int islandId) {
+        if (grid[i][j] != 1) {
+            return 0;
         }
 
-        int leftIslandId = 0;
-        IslandSize leftIslandSize = null;
-        // Check left if not left-most row.
-        if (j > 0) {
-            leftIslandId = grid[i][j - 1];
-            leftIslandSize = islandIdToSize.get(leftIslandId);
+        int size = 1;
+        grid[i][j] = islandId;
+
+        // up
+        if (i - 1 >= 0) {
+            size += travel(grid, i - 1, j, islandId);
         }
 
-        // Merge islands if adjacent to two different islands.
-        if (topIslandId > 0 && leftIslandId > 0 && topIslandId != leftIslandId) {
-            if (!topIslandSize.islandIds.contains(leftIslandId)) {
-                leftIslandSize.size += topIslandSize.size;
-                leftIslandSize.islandIds.addAll(topIslandSize.islandIds);
-                for (int islandId : topIslandSize.islandIds) {
-                    islandIdToSize.put(islandId, leftIslandSize);
-                }
-            }
-            return leftIslandSize;
-        } else if (leftIslandId > 0) {
-            return leftIslandSize;
-        } else if (topIslandId > 0) {
-            return topIslandSize;
+        // right
+        if (j + 1 < grid[0].length) {
+            size += travel(grid, i, j + 1, islandId);
         }
 
-        int islandId = nextIslandId.next();
-        IslandSize islandSize = new IslandSize(islandId);
-        islandIdToSize.put(islandId, islandSize);
-        return islandSize;
-    }
-
-    private static class IslandSize {
-        int primaryIslandId;
-        Set<Integer> islandIds = new HashSet<>();
-        int size = 0;
-
-        IslandSize(int islandId) {
-            this.primaryIslandId = islandId;
-            islandIds.add(islandId);
+        // down
+        if (i + 1 < grid.length) {
+            size += travel(grid, i + 1, j, islandId);
         }
 
-        int id() {
-            return primaryIslandId;
+        // left
+        if (j - 1 >= 0) {
+            size += travel(grid, i, j - 1, islandId);
         }
 
-        int size() {
-            return size;
-        }
-
-        void increment() {
-            size++;
-        }
-    }
-
-    private static class NextIslandId {
-        int nextIslandId = 2;
-
-        int next() {
-            return nextIslandId++;
-        }
+        return size;
     }
 }
